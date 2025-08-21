@@ -1,6 +1,6 @@
 use crate::{
     modules::uri_files::UriFiles,
-    structs::routes::{handle_resource::HandleResourceInput, initialize, list_resources},
+    structs::routes::{handle_resource, initialize, list_resources},
 };
 use rmcp::{
     ServerHandler,
@@ -72,9 +72,28 @@ impl Features {
     #[tool(description = "Handle a specific resource")]
     fn handle_resource(
         &self,
-        Parameters(HandleResourceInput { uri }): Parameters<HandleResourceInput>,
+        Parameters(handle_resource::HandleResourceInput { uri }): Parameters<
+            handle_resource::HandleResourceInput,
+        >,
     ) -> String {
-        return json!({}).to_string();
+        let content = UriFiles::get_content(&uri).unwrap();
+        let content = content
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+            .replace("\t", "    ");
+        let re = regex::Regex::new(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]").unwrap();
+        let content = re.replace_all(&content, "").to_string();
+        json!(handle_resource::HandleResourceOutput {
+            jsonrpc: 2.0,
+            result: handle_resource::Result {
+                contents: handle_resource::Contents {
+                    uri,
+                    mime_type: "text/markdown".into(),
+                    text: content,
+                }
+            }
+        })
+        .to_string()
     }
 
     #[tool(description = "List tools available")]

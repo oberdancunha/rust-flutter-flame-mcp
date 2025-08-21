@@ -1,6 +1,6 @@
 use std::{env::current_dir, fs::read_dir, path::MAIN_SEPARATOR};
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 #[derive(Debug)]
 pub struct UriFiles {
@@ -39,7 +39,15 @@ impl UriFiles {
         Ok(files)
     }
 
-    pub fn get_content(_uri: String) -> Result<String> {
-        Ok(String::new())
+    pub fn get_content(uri: &str) -> Result<String> {
+        let uri = uri.replace("flame://", "");
+        let current_dir = current_dir()?;
+        let file = current_dir.join(format!("{}.md", uri));
+        if file.is_file() {
+            let content = std::fs::read_to_string(&file)?;
+            return Ok(content);
+        } else {
+            bail!("Arquivo não encontrado: {}", file.display());
+        }
     }
 }
