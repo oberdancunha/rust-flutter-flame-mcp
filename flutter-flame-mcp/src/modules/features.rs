@@ -1,6 +1,9 @@
 use crate::{
     modules::uri_files::UriFiles,
-    structs::routes::{handle_resource, initialize, list_resources},
+    structs::routes::{
+        handle_resource, initialize, list_resources,
+        list_tools::{list_tools, list_tools_query, list_tools_topic},
+    },
 };
 use rmcp::{
     ServerHandler,
@@ -8,7 +11,7 @@ use rmcp::{
     model::{ServerCapabilities, ServerInfo},
     tool, tool_handler, tool_router,
 };
-use serde_json::json;
+use serde_json::{Value, json, to_string, to_value};
 
 #[derive(Debug, Clone)]
 pub struct Features {
@@ -98,39 +101,45 @@ impl Features {
 
     #[tool(description = "List tools available")]
     fn list_tools(&self) -> String {
-        let tools = json!([
-            {
-                "name": "search_documentation",
-                "description": "Search through Flame documentation",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string", "description": "Search query"}
+        let tools: Vec<Value> = vec![
+            to_value(&list_tools_query::ListToolsQueryOutput {
+                name: String::from("search_documentation"),
+                description: String::from("Search through Flame documentation"),
+                input_schema: list_tools_query::InputSchema {
+                    type_schema: String::from("object"),
+                    properties: list_tools_query::Properties {
+                        query: list_tools_query::Query {
+                            type_query: String::from("string"),
+                            description: String::from("Search query"),
+                        },
                     },
-                    "required": ["query"]
-                }
-            },
-            {
-                "name": "tutorial",
-                "description": "Get complete Flame tutorials with step-by-step instructions for building games (space shooter, platformer, klondike). Use this for learning how to build specific games.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "topic": {
-                            "type": "string",
-                            "description": "Tutorial topic: \"space shooter\" for complete space shooter game tutorial, \"platformer\" for platformer game tutorial, \"klondike\" for card game tutorial, or \"list\" to see all available tutorials"
-                        }
+                    required: vec![String::from("query")],
+                },
+            })
+            .unwrap(),
+            to_value(&list_tools_topic::ListToolsTopicOutput {
+                name: String::from("tutorial"),
+                description: String::from("Get complete Flame tutorials with step-by-step instructions for building games (space shooter, platformer, klondike). Use this for learning how to build specific games."),
+                input_schema: list_tools_topic::InputSchema {
+                    type_schema: String::from("object"),
+                    properties: list_tools_topic::Properties {
+                        topic: list_tools_topic::Topic {
+                            type_topic: String::from("string"),
+                            description: String::from(
+                            "Tutorial topic: \"space shooter\" for complete space shooter game tutorial, \"platformer\" for platformer game tutorial, \"klondike\" for card game tutorial, or \"list\" to see all available tutorials",
+                            ),
+                        },
                     },
-                    "required": ["topic"]
-                }
-            },
-        ]).to_string();
-
-        json!({
-            "jsonrpc": "2.0",
-            "result": {"tools": tools}
+                    required: vec![String::from("topic")],
+                },
+            })
+            .unwrap(),
+        ];
+        to_string(&list_tools::ListToolsOutput {
+            jsonrpc: 2.0,
+            result: list_tools::Result { tools },
         })
-        .to_string()
+        .unwrap()
     }
 }
 
