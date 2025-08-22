@@ -21,6 +21,6 @@ pub struct Result {
 
 #[derive(Debug, Serialize)]
 pub struct HandleResourceOutput {
-    pub jsonrpc: f32,
+    pub jsonrpc: String,
     pub result: Result,
 }

@@ -8,6 +8,6 @@ pub struct Result {
 
 #[derive(Debug, Serialize)]
 pub struct ListToolsOutput {
-    pub jsonrpc: f32,
+    pub jsonrpc: String,
     pub result: Result,
 }

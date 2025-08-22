@@ -34,7 +34,7 @@ pub struct ServerInfo {
 
 #[derive(Debug, Serialize)]
 pub struct InitializeOutput {
-    pub jsonrpc: f32,
+    pub jsonrpc: String,
     pub result: Result,
     #[serde(rename = "serverInfo")]
     pub server_info: ServerInfo,

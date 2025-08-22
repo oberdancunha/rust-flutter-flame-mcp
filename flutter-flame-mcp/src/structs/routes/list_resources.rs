@@ -11,11 +11,11 @@ pub struct Resource {
 
 #[derive(Debug, Serialize)]
 pub struct Resources {
-    pub resources: Vec<String>,
+    pub resources: Vec<Resource>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ListResourcesOutput {
-    pub jsonrpc: f32,
+    pub jsonrpc: String,
     pub result: Resources,
 }
