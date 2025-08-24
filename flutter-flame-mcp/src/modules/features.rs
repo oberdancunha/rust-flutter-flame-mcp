@@ -1,7 +1,7 @@
 use crate::{
     modules::uri_files::UriFiles,
     structs::routes::{
-        handle_resource, initialize, list_resources,
+        handle_resource, initialize, list_resources, handle_tool,
         list_tools::{list_tools, list_tools_query, list_tools_topic},
     },
 };
@@ -135,6 +135,33 @@ impl Features {
             jsonrpc: "2.0".into(),
             result: list_tools::Result { tools },
         })
+        .unwrap()
+    }
+
+    #[tool(description = "Handle a specific tool")]
+    fn handle_tool(&self, Parameters(handle_tool::HandleToolInput { name, arguments }): Parameters<handle_tool::HandleToolInput>) -> String {
+        let mut result = String::new();
+        match name {
+            handle_tool::ToolName::SearchDocumentation => {
+                if let Some(query_value) = arguments.get(&handle_tool::ToolArgument::Query) {
+                } else {
+                    result = "❌ Search query cannot be empty".into();
+                }
+            },
+            handle_tool::ToolName::Tutorial => {
+                if let Some(topic_value) = arguments.get(&handle_tool::ToolArgument::Topic) {
+                } else {
+                    result = "❌ Tutorial topic cannot be empty".into();
+                }
+            }
+        }
+
+        to_string(&serde_json::json!({
+            "jsonrpc": "2.0",
+            "result": {
+                "text": result,
+            }
+        }))
         .unwrap()
     }
 }
