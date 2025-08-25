@@ -5,6 +5,7 @@ use crate::{
         list_tools::{list_tools, list_tools_query, list_tools_topic},
     },
 };
+use std::{fmt::Write};
 use rmcp::{
     ServerHandler,
     handler::server::tool::{Parameters, ToolRouter},
@@ -144,25 +145,40 @@ impl Features {
         match name {
             handle_tool::ToolName::SearchDocumentation => {
                 if let Some(query_value) = arguments.get(&handle_tool::ToolArgument::Query) {
-                } else {
-                    result = "❌ Search query cannot be empty".into();
+                    if query_value.is_empty() {
+                        result = "❌ Search query cannot be empty".into();
+                    } else {
+                        let results = UriFiles::search(&query_value);
+                        if results.is_empty() {
+                            result = format!("No results found for {}", query_value);
+                        } else {
+                            let mut buffer = String::new();
+                            for result in results.iter().take(5) {
+                                buffer.push_str(&format!("📄 **{}** ({})", result.title, result.uri));
+                                buffer.push_str(&format!("   {}", result.snippet));
+                            }
+                            write!(&mut result, "{}", buffer).unwrap();
+                        }
+                    }
                 }
             },
             handle_tool::ToolName::Tutorial => {
                 if let Some(topic_value) = arguments.get(&handle_tool::ToolArgument::Topic) {
-                } else {
-                    result = "❌ Tutorial topic cannot be empty".into();
+                    if topic_value.is_empty() {
+                        result = "❌ Tutorial topic cannot be empty".into();
+                    } else {}
                 }
-            }
+            },
         }
 
-        to_string(&serde_json::json!({
-            "jsonrpc": "2.0",
-            "result": {
-                "text": result,
+        to_string(
+            &handle_tool::HandleToolOutput {
+                jsonrpc: "2.0".into(),
+                result: handle_tool::Result {
+                    text: result
+                }
             }
-        }))
-        .unwrap()
+        ).unwrap()
     }
 }
 

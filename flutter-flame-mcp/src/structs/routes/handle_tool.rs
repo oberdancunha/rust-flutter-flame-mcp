@@ -1,5 +1,5 @@
 use rmcp::schemars;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
@@ -20,4 +20,15 @@ pub enum ToolName {
 pub enum ToolArgument {
     Topic,
     Query,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Result {
+    pub text: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HandleToolOutput {
+    pub jsonrpc: String,
+    pub result: Result,
 }

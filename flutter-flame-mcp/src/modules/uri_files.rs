@@ -2,6 +2,8 @@ use std::{env::current_dir, fs::read_dir, path::MAIN_SEPARATOR};
 
 use anyhow::{Result, bail};
 
+use crate::structs::snippet::Snippet;
+
 #[derive(Debug)]
 pub struct UriFiles {
     pub uri: String,
@@ -49,5 +51,43 @@ impl UriFiles {
         } else {
             bail!("Arquivo não encontrado: {}", file.display());
         }
+    }
+
+    pub fn search(query: &str) -> Vec<Snippet> {
+        let mut results: Vec<Snippet> = vec![];
+        let resources = Self::build_index().unwrap();
+        for resource in resources {
+            let content = Self::get_content(&resource.uri).unwrap();
+            if !content.is_empty() && content.to_lowercase().contains(&query.to_lowercase()) {
+                let title = resource.uri.replace("flame://", "").replace('/', " > ");
+                let snippet = Self::_extract_snippet(&content, query);
+                results.push(Snippet {
+                    uri: resource.uri,
+                    title,
+                    snippet,
+                });
+            }
+        }
+
+        results
+    }
+
+    fn _extract_snippet(content: &str, query: &str) -> String {
+        let lines: Vec<&str> = content.split("\n").collect();
+        for i in 0..lines.len() {
+            if lines[i].to_lowercase().contains(&query.to_lowercase()) {
+                let start: usize = i.saturating_sub(1);
+                let end: usize = std::cmp::min(lines.len(), i.saturating_add(2));
+                return lines[start..end].join("\n").trim().into();
+            }
+        }
+        return lines
+            .iter()
+            .take(3)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
+            .trim()
+            .to_string();
     }
 }
