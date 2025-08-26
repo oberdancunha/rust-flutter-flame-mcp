@@ -1,15 +1,15 @@
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct Topic {
+pub struct Query {
     #[serde(rename = "type")]
-    pub type_topic: String,
+    pub type_query: String,
     pub description: String,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Properties {
-    pub topic: Topic,
+    pub query: Query,
 }
 
 #[derive(Debug, Serialize)]
@@ -21,7 +21,7 @@ pub struct InputSchema {
 }
 
 #[derive(Debug, Serialize)]
-pub struct ListToolsTopicOutput {
+pub struct ToolsQuery {
     pub name: String,
     pub description: String,
     #[serde(rename = "inputSchema")]
