@@ -13,6 +13,7 @@ use rmcp::{
     tool, tool_handler, tool_router,
 };
 use serde_json::{Value, to_string, to_value};
+use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Features {
@@ -82,7 +83,7 @@ impl Features {
             .replace("\r\n", "\n")
             .replace("\r", "\n")
             .replace("\t", "    ");
-        let re = regex::Regex::new(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]").unwrap();
+        let re = Regex::new(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]").unwrap();
         let content = re.replace_all(&content, "").to_string();
         to_string(&handle_resource::HandleResourceOutput {
             jsonrpc: "2.0".into(),
@@ -154,10 +155,10 @@ impl Features {
                         } else {
                             let mut buffer = String::new();
                             for result in results.iter().take(5) {
-                                buffer.push_str(&format!("📄 **{}** ({})", result.title, result.uri));
-                                buffer.push_str(&format!("   {}", result.snippet));
+                                writeln!(&mut buffer, "📄 **{}** ({})", result.title, result.uri).unwrap();
+                                writeln!(&mut buffer, "   {}", result.snippet).unwrap();
                             }
-                            write!(&mut result, "{}", buffer).unwrap();
+                            writeln!(&mut result, "{}", buffer).unwrap();
                         }
                     }
                 }
@@ -166,7 +167,9 @@ impl Features {
                 if let Some(topic_value) = arguments.get(&handle_tool::ToolArgument::Topic) {
                     if topic_value.is_empty() {
                         result = "❌ Tutorial topic cannot be empty".into();
-                    } else {}
+                    } else {
+                        result = UriFiles::handle_tutorial_request(topic_value);
+                    }
                 }
             },
         }
