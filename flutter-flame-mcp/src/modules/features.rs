@@ -1,5 +1,6 @@
 use crate::{
-    modules::documentation_files::DocumentationFiles,
+    domain::resources::{list_resources::ListResources, handle_resources::HandleResources},
+    modules::{documentation_files::DocumentationFiles},
     structs::routes::{
         handle_resource, initialize, list_resources, handle_tool,
         list_tools::{list_tools, list_tools_query, list_tools_topic},
@@ -13,7 +14,6 @@ use rmcp::{
     tool, tool_handler, tool_router,
 };
 use serde_json::{Value, to_string, to_value};
-use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Features {
@@ -52,21 +52,11 @@ impl Features {
 
     #[tool(description = "List resources available")]
     fn list_resources(&self) -> String {
-        let files: Vec<DocumentationFiles> = DocumentationFiles::build_index().unwrap();
-        let mut resources: Vec<list_resources::Resource> = vec![];
-        for file in files {
-            let file_name = file.uri.replace("flame://", "").replace("/", " > ");
-            resources.push(list_resources::Resource {
-                uri: file.uri,
-                name: format!("Flame: {}", file_name),
-                description: format!("Flame engine documentation: {}", file_name),
-                mime_type: "text/markdown".into(),
-            });
-        }
+        let resources = ListResources::execute();
 
         to_string(&list_resources::ListResourcesOutput {
             jsonrpc: "2.0".into(),
-            result: list_resources::Resources { resources }
+            result: list_resources::Resources { resources },
         })
         .unwrap()
     }
@@ -78,13 +68,7 @@ impl Features {
             handle_resource::HandleResourceInput,
         >,
     ) -> String {
-        let content = DocumentationFiles::get_content(&uri).unwrap();
-        let content = content
-            .replace("\r\n", "\n")
-            .replace("\r", "\n")
-            .replace("\t", "    ");
-        let re = Regex::new(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]").unwrap();
-        let content = re.replace_all(&content, "").to_string();
+        let content = HandleResources::execute(&uri);
         to_string(&handle_resource::HandleResourceOutput {
             jsonrpc: "2.0".into(),
             result: handle_resource::Result {
