@@ -1,5 +1,5 @@
 use crate::{
-    modules::uri_files::UriFiles,
+    modules::documentation_files::DocumentationFiles,
     structs::routes::{
         handle_resource, initialize, list_resources, handle_tool,
         list_tools::{list_tools, list_tools_query, list_tools_topic},
@@ -52,7 +52,7 @@ impl Features {
 
     #[tool(description = "List resources available")]
     fn list_resources(&self) -> String {
-        let files: Vec<UriFiles> = UriFiles::build_index().unwrap();
+        let files: Vec<DocumentationFiles> = DocumentationFiles::build_index().unwrap();
         let mut resources: Vec<list_resources::Resource> = vec![];
         for file in files {
             let file_name = file.uri.replace("flame://", "").replace("/", " > ");
@@ -78,7 +78,7 @@ impl Features {
             handle_resource::HandleResourceInput,
         >,
     ) -> String {
-        let content = UriFiles::get_content(&uri).unwrap();
+        let content = DocumentationFiles::get_content(&uri).unwrap();
         let content = content
             .replace("\r\n", "\n")
             .replace("\r", "\n")
@@ -149,7 +149,7 @@ impl Features {
                     if query_value.is_empty() {
                         result = "❌ Search query cannot be empty".into();
                     } else {
-                        let results = UriFiles::search(&query_value);
+                        let results = DocumentationFiles::search(&query_value);
                         if results.is_empty() {
                             result = format!("No results found for {}", query_value);
                         } else {
@@ -168,7 +168,7 @@ impl Features {
                     if topic_value.is_empty() {
                         result = "❌ Tutorial topic cannot be empty".into();
                     } else {
-                        result = UriFiles::handle_tutorial_request(topic_value);
+                        result = DocumentationFiles::handle_tutorial_request(topic_value);
                     }
                 }
             },

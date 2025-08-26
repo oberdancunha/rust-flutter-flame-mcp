@@ -1,3 +1,3 @@
+pub mod documentation_files;
 pub mod features;
 pub mod server;
-pub mod uri_files;

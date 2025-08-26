@@ -13,11 +13,11 @@ use std::fmt::Write;
 use crate::structs::snippet::Snippet;
 
 #[derive(Debug)]
-pub struct UriFiles {
+pub struct DocumentationFiles {
     pub uri: String,
 }
 
-impl UriFiles {
+impl DocumentationFiles {
     pub fn build_index() -> Result<Vec<Self>> {
         let current_dir = current_dir()?;
         let docs_cache_dir = current_dir.join("docs_cache");
@@ -301,11 +301,12 @@ impl UriFiles {
             .and_then(|caps| caps.get(1))
             .and_then(|m| m.as_str().parse().ok())
             .unwrap_or(999);
+
         step_number
     }
 
     fn _format_topic_name(topic: &str) -> String {
-        topic
+        let topic_formatted = topic
             .split(|c: char| c == '_' || c == '-' || c.is_whitespace())
             .filter(|word| !word.is_empty())
             .map(|word| {
@@ -318,7 +319,9 @@ impl UriFiles {
                 }
             })
             .collect::<Vec<_>>()
-            .join(" ")
+            .join(" ");
+
+        topic_formatted
     }
 
     fn _search_tutorials(query: &str) -> Vec<Snippet> {
