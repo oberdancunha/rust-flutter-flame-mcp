@@ -1,9 +1,9 @@
 use crate::modules::documentation_files::DocumentationFiles;
 use regex::Regex;
 
-pub struct HandleResources {}
+pub struct HandleResource {}
 
-impl HandleResources {
+impl HandleResource {
     pub fn execute(uri: &str) -> String {
         let content = DocumentationFiles::get_content(&uri).unwrap();
         let content = content

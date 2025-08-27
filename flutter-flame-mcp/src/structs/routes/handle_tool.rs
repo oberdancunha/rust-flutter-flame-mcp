@@ -2,7 +2,7 @@ use rmcp::schemars;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::domain::tools::tool_argument::ToolArgument;
+use crate::domain::tool::tool_argument::ToolArgument;
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 pub struct HandleToolInput {

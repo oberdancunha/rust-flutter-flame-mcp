@@ -1,4 +1,4 @@
-use crate::domain::resources::resource::Resource;
+use crate::domain::resource::resource::Resource;
 use crate::modules::documentation_files::DocumentationFiles;
 
 pub struct ListResources;

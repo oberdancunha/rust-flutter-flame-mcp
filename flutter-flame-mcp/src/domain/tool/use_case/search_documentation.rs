@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Write};
 
 use crate::{
-    domain::tools::tool_argument::ToolArgument, modules::documentation_files::DocumentationFiles,
+    domain::tool::tool_argument::ToolArgument, modules::documentation_files::DocumentationFiles,
 };
 
 pub struct SearchDocumentation {}

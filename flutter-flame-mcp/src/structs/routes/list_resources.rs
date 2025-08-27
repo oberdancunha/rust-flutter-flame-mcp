@@ -1,4 +1,4 @@
-use crate::domain::resources::resource::Resource;
+use crate::domain::resource::resource::Resource;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]

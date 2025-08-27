@@ -8,8 +8,8 @@ use serde_json::to_string;
 
 use crate::{
     domain::{
-        resources::{handle_resources::HandleResources, list_resources::ListResources},
-        tools::{
+        resource::use_case::{handle_resource::HandleResource, list_resources::ListResources},
+        tool::use_case::{
             list_tools::ListTools, search_documentation::SearchDocumentation,
             search_tutorial::SearchTutorial,
         },
@@ -70,7 +70,7 @@ impl Features {
             handle_resource::HandleResourceInput,
         >,
     ) -> String {
-        let content = HandleResources::execute(&uri);
+        let content = HandleResource::execute(&uri);
 
         to_string(&handle_resource::HandleResourceOutput {
             jsonrpc: "2.0".into(),

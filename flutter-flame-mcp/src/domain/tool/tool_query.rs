@@ -21,7 +21,7 @@ pub struct InputSchema {
 }
 
 #[derive(Debug, Serialize)]
-pub struct ToolsQuery {
+pub struct ToolQuery {
     pub name: String,
     pub description: String,
     #[serde(rename = "inputSchema")]
