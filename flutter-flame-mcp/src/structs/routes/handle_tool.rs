@@ -2,6 +2,8 @@ use rmcp::schemars;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::domain::tools::tool_argument::ToolArgument;
+
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 pub struct HandleToolInput {
     pub name: ToolName,
@@ -13,13 +15,6 @@ pub struct HandleToolInput {
 pub enum ToolName {
     SearchDocumentation,
     Tutorial,
-}
-
-#[derive(Debug, Deserialize, PartialEq, Eq, Hash, schemars::JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ToolArgument {
-    Topic,
-    Query,
 }
 
 #[derive(Debug, Serialize)]
