@@ -1,4 +1,4 @@
-use crate::modules::features::Features;
+use crate::{MCP_ADDRESS, MCP_ENTRY_POINT, MCP_PORT, modules::features::Features};
 use anyhow::Result;
 use rmcp::transport::{
     StreamableHttpService, streamable_http_server::session::local::LocalSessionManager,
@@ -24,8 +24,9 @@ impl Server {
             Default::default(),
         );
 
-        let router = axum::Router::new().nest_service("/mcp", service);
-        let tcp_listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await?;
+        let router = axum::Router::new().nest_service(*MCP_ENTRY_POINT, service);
+        let tcp_listener =
+            tokio::net::TcpListener::bind(format!("{}:{}", *MCP_ADDRESS, *MCP_PORT)).await?;
         axum::serve(tcp_listener, router)
             .with_graceful_shutdown(async { tokio::signal::ctrl_c().await.unwrap() })
             .await?;

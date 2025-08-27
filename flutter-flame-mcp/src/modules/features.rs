@@ -7,6 +7,7 @@ use rmcp::{
 use serde_json::to_string;
 
 use crate::{
+    JSONRPC_VERSION, PROTOCOL_VERSION, SERVER_INFO_INSTRUCTIONS, SERVER_NAME, SERVER_VERSION,
     domain::{
         resource::use_case::{handle_resource::HandleResource, list_resources::ListResources},
         tool::use_case::{
@@ -34,17 +35,17 @@ impl Features {
     #[tool(description = "Initialize server")]
     fn initialize(&self) -> String {
         to_string(&initialize::InitializeOutput {
-            jsonrpc: "2.0".into(),
+            jsonrpc: JSONRPC_VERSION.to_owned(),
             result: initialize::Result {
-                protocol_version: "2024-11-05".into(),
+                protocol_version: PROTOCOL_VERSION.to_owned(),
                 capabilities: initialize::Capabilities {
                     resources: initialize::Resources { list_changed: true },
                     tools: initialize::Tools { list_changed: true },
                 },
             },
             server_info: initialize::ServerInfo {
-                name: "flutter-flame-mcp".into(),
-                version: "1.0.0".into(),
+                name: SERVER_NAME.to_owned(),
+                version: SERVER_VERSION.to_owned(),
                 description: "Flame game engine MCP server with on-demand GitHub documentation"
                     .into(),
             },
@@ -57,7 +58,7 @@ impl Features {
         let resources = ListResources::execute();
 
         to_string(&list_resources::ListResourcesOutput {
-            jsonrpc: "2.0".into(),
+            jsonrpc: JSONRPC_VERSION.to_owned(),
             result: list_resources::Resources { resources },
         })
         .unwrap()
@@ -73,7 +74,7 @@ impl Features {
         let content = HandleResource::execute(&uri);
 
         to_string(&handle_resource::HandleResourceOutput {
-            jsonrpc: "2.0".into(),
+            jsonrpc: JSONRPC_VERSION.to_owned(),
             result: handle_resource::Result {
                 contents: handle_resource::Contents {
                     uri,
@@ -90,7 +91,7 @@ impl Features {
         let tools = ListTools::execute();
 
         to_string(&list_tools::ListToolsOutput {
-            jsonrpc: "2.0".into(),
+            jsonrpc: JSONRPC_VERSION.to_owned(),
             result: list_tools::Result { tools },
         })
         .unwrap()
@@ -109,7 +110,7 @@ impl Features {
         };
 
         to_string(&handle_tool::HandleToolOutput {
-            jsonrpc: "2.0".into(),
+            jsonrpc: JSONRPC_VERSION.to_owned(),
             result: handle_tool::Result { text: result },
         })
         .unwrap()
@@ -120,7 +121,7 @@ impl Features {
 impl ServerHandler for Features {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
-            instructions: Some("Flutter Flame MCP".into()),
+            instructions: Some(SERVER_INFO_INSTRUCTIONS.to_owned()),
             capabilities: ServerCapabilities::builder().enable_tools().build(),
             ..Default::default()
         }
