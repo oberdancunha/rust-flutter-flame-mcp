@@ -13,16 +13,16 @@ use std::fmt::Write;
 use crate::structs::snippet::Snippet;
 
 #[derive(Debug)]
-pub struct DocumentationFiles {
-    pub uri: String,
+pub struct DocsCacheDataSource {
+    pub files_uri: Vec<String>,
 }
 
-impl DocumentationFiles {
-    pub fn build_index() -> Result<Vec<Self>> {
-        let current_dir = current_dir()?;
+impl DocsCacheDataSource {
+    pub fn new() -> Self {
+        let current_dir = current_dir().unwrap();
         let docs_cache_dir = current_dir.join("docs_cache");
         let mut stack = vec![docs_cache_dir];
-        let mut files: Vec<Self> = vec![];
+        let mut files_uri: Vec<String> = vec![];
         while let Some(path) = stack.pop() {
             if let Ok(entries) = read_dir(&path) {
                 for entry in entries.flatten() {
@@ -32,116 +32,26 @@ impl DocumentationFiles {
                     } else {
                         let entry_path_extension = entry_path.extension().unwrap();
                         if entry_path.is_file() && entry_path_extension == "md" {
-                            let file = entry_path.strip_prefix(&current_dir)?;
+                            let file = entry_path.strip_prefix(&current_dir).unwrap();
                             let file = file
                                 .to_str()
                                 .unwrap()
                                 .replace(MAIN_SEPARATOR, "/")
                                 .replace(".md", "");
                             let uri = format!("flame://{}", file);
-                            files.push(Self { uri });
+                            files_uri.push(uri);
                         }
                     }
                 }
             }
         }
 
-        Ok(files)
+        Self { files_uri }
     }
 
-    pub fn get_content(uri: &str) -> Result<String> {
-        let uri = uri.replace("flame://", "");
-        let current_dir = current_dir()?;
-        let file = current_dir.join(format!("{}.md", uri));
-        if file.is_file() {
-            let content = std::fs::read_to_string(&file)?;
-            return Ok(content);
-        } else {
-            bail!("Arquivo não encontrado: {}", file.display());
-        }
-    }
-
-    pub fn search(query: &str) -> Vec<Snippet> {
-        let mut results: Vec<Snippet> = vec![];
-        let resources = Self::build_index().unwrap();
-        for resource in resources {
-            let content = Self::get_content(&resource.uri).unwrap();
-            if !content.is_empty() && content.to_lowercase().contains(&query.to_lowercase()) {
-                let title = resource.uri.replace("flame://", "").replace('/', " > ");
-                let snippet = Self::_extract_snippet(&content, query);
-                results.push(Snippet {
-                    uri: resource.uri,
-                    title,
-                    snippet,
-                });
-            }
-        }
-
-        results
-    }
-
-    fn _extract_snippet(content: &str, query: &str) -> String {
-        let lines: Vec<&str> = content.split('\n').collect();
-        for i in 0..lines.len() {
-            if lines[i].to_lowercase().contains(&query.to_lowercase()) {
-                let start: usize = i.saturating_sub(1);
-                let end: usize = std::cmp::min(lines.len(), i.saturating_add(2));
-                return lines[start..end].join("\n").trim().into();
-            }
-        }
-        return lines
-            .iter()
-            .take(3)
-            .cloned()
-            .collect::<Vec<_>>()
-            .join("\n")
-            .trim()
-            .to_string();
-    }
-
-    pub fn handle_tutorial_request(topic: &str) -> String {
-        let lower_topic = topic.to_lowercase();
-        if lower_topic == "list" {
-            return Self::_list_all_tutorials();
-        }
-        if lower_topic.contains("space shooter") || lower_topic.contains("spaceshooter") {
-            return Self::_get_complete_tutorial("space_shooter");
-        } else if lower_topic.contains("platformer") {
-            return Self::_get_complete_tutorial("platformer");
-        } else if lower_topic.contains("klondike") {
-            return Self::_get_complete_tutorial("klondike");
-        }
-        let tutorial_results = Self::_search_tutorials(&lower_topic);
-        if tutorial_results.is_empty() {
-            return format!(
-                "No tutorial found for {}. Try \"list\" to see all available tutorials.",
-                topic
-            );
-        }
-        let mut buffer = String::new();
-        writeln!(
-            &mut buffer,
-            "🎓 Found {} tutorial(s) for {}:\n",
-            tutorial_results.len(),
-            topic
-        )
-        .unwrap();
-        for tutorial in tutorial_results {
-            writeln!(&mut buffer, "📚 **{}* ({})", tutorial.title, tutorial.uri).unwrap();
-            writeln!(&mut buffer, "   {}\n", tutorial.snippet).unwrap();
-        }
-
-        buffer
-    }
-
-    fn _list_all_tutorials() -> String {
+    pub fn list_all_tutorials(&self) -> String {
         let mut tutorial_groups: HashMap<String, Vec<String>> = HashMap::new();
-        let resources = Self::build_index().unwrap();
-        let tutorials: Vec<String> = resources
-            .into_iter()
-            .filter(|resource| resource.uri.contains("tutorials/"))
-            .map(|resource| resource.uri)
-            .collect();
+        let tutorials: Vec<String> = self._get_tutorials();
         if tutorials.is_empty() {
             return "No tutorials found in the documentation cache.".into();
         }
@@ -200,16 +110,12 @@ impl DocumentationFiles {
         buffer
     }
 
-    fn _get_complete_tutorial(tutorial_name: &str) -> String {
-        let resources = Self::build_index().unwrap();
-        let mut tutorial_resources: Vec<String> = resources
-            .into_iter()
-            .filter(|resource| {
-                resource
-                    .uri
-                    .contains(&format!("tutorials/{}", tutorial_name))
-            })
-            .map(|resource| resource.uri)
+    pub fn get_complete_tutorial(&self, tutorial_name: &str) -> String {
+        let mut tutorial_resources: Vec<String> = self
+            .files_uri
+            .iter()
+            .cloned()
+            .filter(|uri| uri.contains(&format!("tutorials/{}", tutorial_name)))
             .collect();
         if tutorial_resources.is_empty() {
             return format!("No tutorial found for {}", tutorial_name);
@@ -294,6 +200,64 @@ impl DocumentationFiles {
         buffer
     }
 
+    pub fn search_tutorials(&self, query: &str) -> Vec<Snippet> {
+        let mut results: Vec<Snippet> = vec![];
+        let tutorial_resources: Vec<String> = self._get_tutorials();
+        for uri in tutorial_resources {
+            let content = Self::get_content(&uri).unwrap();
+            if !content.is_empty() && content.to_lowercase().contains(&query.to_lowercase()) {
+                let title = uri.replace("flame://", "").replace("/", " > ");
+                let snippet = Self::extract_snippet(&content, query);
+                results.push(Snippet {
+                    uri,
+                    title,
+                    snippet,
+                });
+            }
+        }
+
+        results
+    }
+
+    fn _get_tutorials(&self) -> Vec<String> {
+        self.files_uri
+            .iter()
+            .filter(|uri| uri.contains("tutorials/"))
+            .cloned()
+            .collect()
+    }
+
+    pub fn get_content(uri: &str) -> Result<String> {
+        let uri = uri.replace("flame://", "");
+        let current_dir = current_dir()?;
+        let file = current_dir.join(format!("{}.md", uri));
+        if file.is_file() {
+            let content = std::fs::read_to_string(&file)?;
+            return Ok(content);
+        } else {
+            bail!("Arquivo não encontrado: {}", file.display());
+        }
+    }
+
+    pub fn extract_snippet(content: &str, query: &str) -> String {
+        let lines: Vec<&str> = content.split('\n').collect();
+        for i in 0..lines.len() {
+            if lines[i].to_lowercase().contains(&query.to_lowercase()) {
+                let start: usize = i.saturating_sub(1);
+                let end: usize = std::cmp::min(lines.len(), i.saturating_add(2));
+                return lines[start..end].join("\n").trim().into();
+            }
+        }
+        return lines
+            .iter()
+            .take(3)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
+            .trim()
+            .to_string();
+    }
+
     fn _extract_step_number(file_name: &str) -> u16 {
         let re: Regex = Regex::new(r"step_?(\d+)").unwrap();
         let step_number = re
@@ -322,29 +286,5 @@ impl DocumentationFiles {
             .join(" ");
 
         topic_formatted
-    }
-
-    fn _search_tutorials(query: &str) -> Vec<Snippet> {
-        let mut results: Vec<Snippet> = vec![];
-        let resources = Self::build_index().unwrap();
-        let tutorial_resources: Vec<String> = resources
-            .into_iter()
-            .filter(|resource| resource.uri.contains("tutorials/"))
-            .map(|resource| resource.uri)
-            .collect();
-        for uri in tutorial_resources {
-            let content = Self::get_content(&uri).unwrap();
-            if !content.is_empty() && content.to_lowercase().contains(&query.to_lowercase()) {
-                let title = uri.replace("flame://", "").replace("/", " > ");
-                let snippet = Self::_extract_snippet(&content, query);
-                results.push(Snippet {
-                    uri,
-                    title,
-                    snippet,
-                });
-            }
-        }
-
-        results
     }
 }

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Write};
 
-use crate::{
-    domain::tool::tool_argument::ToolArgument, modules::documentation_files::DocumentationFiles,
+use crate::domain::tool::{
+    repository::tool_repository::ToolRepository, tool_argument::ToolArgument,
 };
 
 pub struct SearchDocumentation {}
@@ -13,7 +13,8 @@ impl SearchDocumentation {
             if query_value.is_empty() {
                 result = "❌ Search query cannot be empty".into();
             } else {
-                let results = DocumentationFiles::search(&query_value);
+                let tool_repository = ToolRepository::new();
+                let results = tool_repository.search(&query_value);
                 if results.is_empty() {
                     result = format!("No results found for {}", query_value);
                 } else {

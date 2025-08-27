@@ -3,6 +3,7 @@ use clap::Parser;
 
 use std::error::Error;
 
+pub mod data_source;
 pub mod domain;
 pub mod modules;
 pub mod structs;

@@ -1,11 +1,12 @@
-use crate::modules::documentation_files::DocumentationFiles;
 use regex::Regex;
+
+use crate::data_source::docs_cache_data_source::DocsCacheDataSource;
 
 pub struct HandleResource {}
 
 impl HandleResource {
     pub fn execute(uri: &str) -> String {
-        let content = DocumentationFiles::get_content(&uri).unwrap();
+        let content = DocsCacheDataSource::get_content(&uri).unwrap();
         let content = content
             .replace("\r\n", "\n")
             .replace("\r", "\n")
