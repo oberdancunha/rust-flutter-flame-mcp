@@ -14,10 +14,10 @@ pub struct Server {}
 
 impl Server {
     pub async fn init() -> Result<()> {
-        tracing_subscriber::registry()
+        let _ = tracing_subscriber::registry()
             .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".to_string().into()))
             .with(layer())
-            .init();
+            .try_init();
 
         let service = StreamableHttpService::new(
             || Ok(Routes::new()),

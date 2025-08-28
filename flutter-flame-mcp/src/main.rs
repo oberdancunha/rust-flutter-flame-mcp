@@ -23,10 +23,11 @@ pub static SERVER_INFO_INSTRUCTIONS: Lazy<&'static str> = Lazy::new(|| "2.0");
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-    println!("cargo::warning=***Run Flutter Flame MCP");
     if args.download {
+        println!("cargo::warning=***Update Flutter Flame documentation");
         git_download::repo("flame-engine/flame").await?;
     }
+    println!("cargo::warning=***Run Flutter Flame MCP");
     Server::init().await?;
 
     Ok(())
