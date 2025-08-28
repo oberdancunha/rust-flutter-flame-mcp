@@ -1,4 +1,3 @@
-use crate::{MCP_ADDRESS, MCP_ENTRY_POINT, MCP_PORT, modules::features::Features};
 use anyhow::Result;
 use rmcp::transport::{
     StreamableHttpService, streamable_http_server::session::local::LocalSessionManager,
@@ -7,6 +6,8 @@ use tracing_subscriber::{
     EnvFilter,
     {fmt::layer, layer::SubscriberExt, util::SubscriberInitExt},
 };
+
+use crate::{MCP_ADDRESS, MCP_ENTRY_POINT, MCP_PORT, presentation::routes::Routes};
 
 #[derive(Debug)]
 pub struct Server {}
@@ -19,7 +20,7 @@ impl Server {
             .init();
 
         let service = StreamableHttpService::new(
-            || Ok(Features::new()),
+            || Ok(Routes::new()),
             LocalSessionManager::default().into(),
             Default::default(),
         );

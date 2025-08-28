@@ -1,15 +1,15 @@
 use anyhow::Result;
 use clap::Parser;
 use once_cell::sync::Lazy;
-
 use std::error::Error;
 
+pub mod app;
 pub mod data_source;
 pub mod domain;
-pub mod modules;
+pub mod presentation;
 pub mod structs;
 
-use crate::{modules::server::Server, structs::args::Args};
+use crate::{app::server::Server, structs::args::Args};
 
 pub static MCP_ADDRESS: Lazy<&'static str> = Lazy::new(|| "0.0.0.0");
 pub static MCP_PORT: Lazy<&'static str> = Lazy::new(|| "8080");

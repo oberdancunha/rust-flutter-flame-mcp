@@ -15,16 +15,16 @@ use crate::{
             search_tutorial::SearchTutorial,
         },
     },
-    structs::routes::{handle_resource, handle_tool, initialize, list_resources, list_tools},
+    presentation::output::{handle_resource, handle_tool, initialize, list_resources, list_tools},
 };
 
 #[derive(Debug, Clone)]
-pub struct Features {
+pub struct Routes {
     pub tool_router: ToolRouter<Self>,
 }
 
 #[tool_router]
-impl Features {
+impl Routes {
     #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
@@ -118,7 +118,7 @@ impl Features {
 }
 
 #[tool_handler]
-impl ServerHandler for Features {
+impl ServerHandler for Routes {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
             instructions: Some(SERVER_INFO_INSTRUCTIONS.to_owned()),
