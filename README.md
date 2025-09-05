@@ -128,7 +128,7 @@ O servidor local estará disponível em `http://localhost:8080/mcp`.
         />
       </p>
       <p align="center">
-        Rodando o projeto antes de começarem as modificações.
+        Rodando o projeto antes do início das modificações.
       </p>
     </td>
   </tr>
