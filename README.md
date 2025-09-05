@@ -112,7 +112,7 @@ O servidor local estará disponível em `http://localhost:8080/mcp`.
     <td>
       <p align="center">
         <img
-          src="README/rust_flame_mcp_space_shooter_tutorial.gif"
+          src="README/rust_flame_mcp_tutorial_space_shooter.gif"
         />
       </p>
       <p align="center">
@@ -120,8 +120,31 @@ O servidor local estará disponível em `http://localhost:8080/mcp`.
       </p>
     </td>
   </tr>
+  <tr>
+    <td>
+      <p align="center">
+        <img
+          src="README/rust_flame_mcp_first_run_app.gif"
+        />
+      </p>
+      <p align="center">
+        Rodando o projeto antes de começarem as modificações.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <p align="center">
+        <img
+          src="README/rust_flame_mcp_reproducao_tutorial_space_shooter.gif"
+        />
+      </p>
+      <p align="center">
+        Processo inicial de reprodução do Space Shooter com o agente de IA usando o tutorial solicitado.
+      </p>
+    </td>
+  </tr>  
 </table>
-
 
 ## Referências
 
