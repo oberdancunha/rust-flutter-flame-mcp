@@ -8,7 +8,7 @@ pub struct Http {
 }
 
 impl Http {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             client: Client::builder()
                 .build()
@@ -26,13 +26,19 @@ impl Http {
             .headers(headers.clone())
             .send()
             .await
-            .map_err(|error| format!("Request failed: {}", error))?;
+            .map_err(|error| format!("Request failed: {error}"))?;
         match response.status() {
             reqwest::StatusCode::OK => response
                 .json::<T>()
                 .await
-                .map_err(|error| format!("Failed to parse response: {}", error)),
-            status => Err(format!("Request failed with status: {}", status)),
+                .map_err(|error| format!("Failed to parse response: {error}")),
+            status => Err(format!("Request failed with status: {status}")),
         }
+    }
+}
+
+impl Default for Http {
+    fn default() -> Self {
+        Self::new()
     }
 }

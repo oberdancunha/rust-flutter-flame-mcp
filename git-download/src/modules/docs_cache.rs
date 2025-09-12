@@ -9,7 +9,7 @@ pub struct DocsCache {
 }
 
 impl DocsCache {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             name: "docs_cache".to_string(),
         }
@@ -19,11 +19,17 @@ impl DocsCache {
         let name = &self.name;
         let project_dir = current_dir().unwrap();
         let path = project_dir.join(name);
-        Logger::log(format!("Limpando {:?} directory", path).as_str());
+        Logger::log(format!("Limpando {path:?} directory").as_str());
         if path.exists() {
             remove_dir_all(path)?;
         }
 
         Ok(self)
+    }
+}
+
+impl Default for DocsCache {
+    fn default() -> Self {
+        Self::new()
     }
 }

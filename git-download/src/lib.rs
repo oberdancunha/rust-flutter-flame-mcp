@@ -8,11 +8,11 @@ use crate::modules::{
 use crate::structs::repo::Repo;
 
 pub async fn repo(name: impl Into<String>) -> Result<()> {
-    Logger::new();
+    Logger::default();
     Logger::log("Get Flutter Flame documentation");
     let repo = Repo::new(&name.into());
-    let http = Http::new();
-    let docs_cache = DocsCache::new().clean()?;
+    let http = Http::default();
+    let docs_cache = DocsCache::default().clean()?;
     let copy_request =
         Api::fetch(http, &repo.api, &repo.api, &repo.headers, &docs_cache.name).await?;
     Downloader::new(&repo)

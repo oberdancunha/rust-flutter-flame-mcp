@@ -26,7 +26,7 @@ pub struct Routes {
 #[tool_router]
 impl Routes {
     #[allow(dead_code)]
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             tool_router: Self::tool_router(),
         }
@@ -125,5 +125,11 @@ impl ServerHandler for Routes {
             capabilities: ServerCapabilities::builder().enable_tools().build(),
             ..Default::default()
         }
+    }
+}
+
+impl Default for Routes {
+    fn default() -> Self {
+        Self::new()
     }
 }

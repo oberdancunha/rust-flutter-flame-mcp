@@ -14,7 +14,7 @@ impl SearchTutorial {
             if topic_value.is_empty() {
                 result = "❌ Tutorial topic cannot be empty".into();
             } else {
-                let tool_repository = ToolRepository::new();
+                let tool_repository = ToolRepository::default();
                 result = tool_repository.handle_tutorial_request(topic_value);
             }
         }

@@ -4,7 +4,7 @@ use log::{LevelFilter, error, info};
 pub struct Logger {}
 
 impl Logger {
-    pub fn new() -> Self {
+    fn new() -> Self {
         env_logger::Builder::from_env(Env::default().default_filter_or("info"))
             .filter_level(LevelFilter::Info)
             .init();
@@ -13,10 +13,16 @@ impl Logger {
     }
 
     pub fn log(message: &str) {
-        info!("{}", message);
+        info!("{message}");
     }
 
     pub fn log_error(message: &str) {
-        error!("!!!{}", message);
+        error!("!!!{message}");
+    }
+}
+
+impl Default for Logger {
+    fn default() -> Self {
+        Self::new()
     }
 }

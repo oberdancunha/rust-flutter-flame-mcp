@@ -19,7 +19,7 @@ impl Api {
         api: &str,
         original_api: &str,
         headers: &HeaderMap,
-        docs_cache_path: &String,
+        docs_cache_path: &str,
     ) -> Result<Vec<CopyRequest>> {
         let copy_request =
             (Self::fetch_inner(http, api, original_api, headers, docs_cache_path).await).unwrap();
@@ -31,13 +31,13 @@ impl Api {
         api: &str,
         original_api: &str,
         headers: &HeaderMap,
-        docs_cache_path: &String,
+        docs_cache_path: &str,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<CopyRequest>>> + Send>> {
         let http = http.clone();
         let api = api.to_string();
         let original_api = original_api.to_string();
         let headers = headers.clone();
-        let docs_cache_path = docs_cache_path.clone();
+        let docs_cache_path = docs_cache_path.to_owned();
         let mut copy_request: Vec<CopyRequest> = vec![];
         Box::pin(async move {
             let response = http.clone().make_request::<Vec<Self>>(&api, &headers).await;
@@ -56,17 +56,15 @@ impl Api {
                                 )
                                 .await?,
                             );
-                        } else {
-                            if data.name.ends_with(".md") {
-                                let path = &data.path;
-                                let dst = path.replace("doc", "docs_cache");
-                                Logger::log(format!("File to be get {}", path).as_str());
-                                copy_request.push(CopyRequest::add_file(path, dst));
-                            }
+                        } else if data.name.ends_with(".md") {
+                            let path = &data.path;
+                            let dst = path.replace("doc", "docs_cache");
+                            Logger::log(format!("File to be get {path}").as_str());
+                            copy_request.push(CopyRequest::add_file(path, dst));
                         }
                     }
                 }
-                Err(error) => Logger::log_error(format!("Error: {}", error).as_str()),
+                Err(error) => Logger::log_error(format!("Error: {error}").as_str()),
             };
 
             Ok(copy_request)

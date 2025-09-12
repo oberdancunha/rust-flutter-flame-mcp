@@ -20,14 +20,13 @@ impl Server {
             .try_init();
 
         let service = StreamableHttpService::new(
-            || Ok(Routes::new()),
+            || Ok(Routes::default()),
             LocalSessionManager::default().into(),
             Default::default(),
         );
 
         let router = axum::Router::new().nest_service(*MCP_ENTRY_POINT, service);
-        let tcp_listener =
-            tokio::net::TcpListener::bind(format!("{}:{}", *MCP_ADDRESS, *MCP_PORT)).await?;
+        let tcp_listener = tokio::net::TcpListener::bind((*MCP_ADDRESS, *MCP_PORT)).await?;
         axum::serve(tcp_listener, router)
             .with_graceful_shutdown(async { tokio::signal::ctrl_c().await.unwrap() })
             .await?;

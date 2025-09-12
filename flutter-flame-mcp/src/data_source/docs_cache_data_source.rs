@@ -18,7 +18,7 @@ pub struct DocsCacheDataSource {
 }
 
 impl DocsCacheDataSource {
-    pub fn new() -> Self {
+    fn new() -> Self {
         let current_dir = current_dir().unwrap();
         let docs_cache_dir = current_dir.join("docs_cache");
         let mut stack = vec![docs_cache_dir];
@@ -38,7 +38,7 @@ impl DocsCacheDataSource {
                                 .unwrap()
                                 .replace(MAIN_SEPARATOR, "/")
                                 .replace(".md", "");
-                            let uri = format!("flame://{}", file);
+                            let uri = format!("flame://{file}");
                             files_uri.push(uri);
                         }
                     }
@@ -75,10 +75,10 @@ impl DocsCacheDataSource {
         }
 
         for (topic, uris) in tutorial_groups.iter_mut() {
-            writeln!(&mut buffer, "📖 **{}**\n", topic).unwrap();
+            writeln!(&mut buffer, "📖 **{topic}**\n").unwrap();
             uris.sort_by(|a, b| {
-                let a_name = a.split('/').last().unwrap();
-                let b_name = b.split('/').last().unwrap();
+                let a_name = a.split('/').next_back().unwrap();
+                let b_name = b.split('/').next_back().unwrap();
 
                 // Main tutorial files (same name as directory) come first
                 if a_name == topic.as_str() {
@@ -92,7 +92,7 @@ impl DocsCacheDataSource {
 
             for uri in uris {
                 let title = uri.replace("flame://", "").replace('/', " > ");
-                writeln!(&mut buffer, "   • {}", title).unwrap();
+                writeln!(&mut buffer, "   • {title}").unwrap();
             }
             writeln!(&mut buffer, "\n").unwrap();
         }
@@ -114,15 +114,15 @@ impl DocsCacheDataSource {
         let mut tutorial_resources: Vec<String> = self
             .files_uri
             .iter()
+            .filter(|&uri| uri.contains(&format!("tutorials/{tutorial_name}")))
             .cloned()
-            .filter(|uri| uri.contains(&format!("tutorials/{}", tutorial_name)))
             .collect();
         if tutorial_resources.is_empty() {
-            return format!("No tutorial found for {}", tutorial_name);
+            return format!("No tutorial found for {tutorial_name}");
         }
         tutorial_resources.sort_by(|a, b| {
-            let a_name = a.split('/').last().unwrap();
-            let b_name = b.split('/').last().unwrap();
+            let a_name = a.split('/').next_back().unwrap();
+            let b_name = b.split('/').next_back().unwrap();
 
             // Sort to get main tutorial first, then steps in order
             if a_name == tutorial_name {
@@ -136,7 +136,7 @@ impl DocsCacheDataSource {
             let a_step = Self::_extract_step_number(a_name);
             let b_step = Self::_extract_step_number(b_name);
 
-            return a_step.cmp(&b_step);
+            a_step.cmp(&b_step)
         });
         let mut buffer = String::new();
         writeln!(
@@ -147,21 +147,20 @@ impl DocsCacheDataSource {
         .unwrap();
         writeln!(&mut buffer, "{}", "=".repeat(50)).unwrap();
         writeln!(&mut buffer, "\n").unwrap();
-        for i in 0..tutorial_resources.len() {
-            let uri = &tutorial_resources[i];
+        for uri in &tutorial_resources {
             let content = Self::get_content(uri).unwrap();
             if !content.is_empty() {
-                let file_name = &uri.split('/').last().unwrap();
+                let file_name = &uri.split('/').next_back().unwrap();
                 let is_main_in_tutorial = file_name == &tutorial_name;
                 let step_number = if is_main_in_tutorial {
                     0
                 } else {
-                    Self::_extract_step_number(&file_name)
+                    Self::_extract_step_number(file_name)
                 };
                 if is_main_in_tutorial {
                     writeln!(&mut buffer, "📖 **Overview**\n").unwrap();
                 } else {
-                    writeln!(&mut buffer, "📝 **Step {}**\n", step_number).unwrap();
+                    writeln!(&mut buffer, "📝 **Step {step_number}**\n").unwrap();
                 }
                 // Get first few paragraphs of content
                 let lines: Vec<&str> = content.split('\n').collect();
@@ -179,10 +178,10 @@ impl DocsCacheDataSource {
                     if line.starts_with('#') {
                         writeln!(&mut buffer, "**{}**", line.replace('#', "")).unwrap();
                     } else {
-                        writeln!(&mut buffer, "{}", line).unwrap();
+                        writeln!(&mut buffer, "{line}").unwrap();
                     }
                 }
-                writeln!(&mut buffer, "\n📄 Full content: {}", uri).unwrap();
+                writeln!(&mut buffer, "\n📄 Full content: {uri}").unwrap();
                 writeln!(&mut buffer, "{}", &"-".repeat(30)).unwrap();
                 writeln!(&mut buffer, "\n").unwrap();
             }
@@ -230,10 +229,10 @@ impl DocsCacheDataSource {
     pub fn get_content(uri: &str) -> Result<String> {
         let uri = uri.replace("flame://", "");
         let current_dir = current_dir()?;
-        let file = current_dir.join(format!("{}.md", uri));
+        let file = current_dir.join(format!("{uri}.md"));
         if file.is_file() {
             let content = std::fs::read_to_string(&file)?;
-            return Ok(content);
+            Ok(content)
         } else {
             bail!("Arquivo não encontrado: {}", file.display());
         }
@@ -248,29 +247,27 @@ impl DocsCacheDataSource {
                 return lines[start..end].join("\n").trim().into();
             }
         }
-        return lines
+
+        lines
             .iter()
             .take(3)
             .cloned()
             .collect::<Vec<_>>()
             .join("\n")
             .trim()
-            .to_string();
+            .to_string()
     }
 
     fn _extract_step_number(file_name: &str) -> u16 {
         let re: Regex = Regex::new(r"step_?(\d+)").unwrap();
-        let step_number = re
-            .captures(file_name)
+        re.captures(file_name)
             .and_then(|caps| caps.get(1))
             .and_then(|m| m.as_str().parse().ok())
-            .unwrap_or(999);
-
-        step_number
+            .unwrap_or(999)
     }
 
     fn _format_topic_name(topic: &str) -> String {
-        let topic_formatted = topic
+        topic
             .split(|c: char| c == '_' || c == '-' || c.is_whitespace())
             .filter(|word| !word.is_empty())
             .map(|word| {
@@ -283,8 +280,12 @@ impl DocsCacheDataSource {
                 }
             })
             .collect::<Vec<_>>()
-            .join(" ");
+            .join(" ")
+    }
+}
 
-        topic_formatted
+impl Default for DocsCacheDataSource {
+    fn default() -> Self {
+        Self::new()
     }
 }

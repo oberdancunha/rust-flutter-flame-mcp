@@ -12,7 +12,7 @@ pub mod structs;
 use crate::{app::server::Server, structs::args::Args};
 
 pub static MCP_ADDRESS: Lazy<&'static str> = Lazy::new(|| "0.0.0.0");
-pub static MCP_PORT: Lazy<&'static str> = Lazy::new(|| "8080");
+pub static MCP_PORT: Lazy<u16> = Lazy::new(|| 8080);
 pub static MCP_ENTRY_POINT: Lazy<&'static str> = Lazy::new(|| "/mcp");
 pub static PROTOCOL_VERSION: Lazy<&'static str> = Lazy::new(|| "2024-11-05");
 pub static SERVER_NAME: Lazy<&'static str> = Lazy::new(|| "flutter-flame-mcp");
